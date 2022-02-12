@@ -1,5 +1,7 @@
 package parser;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,11 +12,13 @@ import java.util.concurrent.RecursiveTask;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Crawler extends RecursiveTask<Set<String>> {
+public class Crawler extends RecursiveTask<Set<Page>> {
 
   private static final long SerialVersionUID = 1L;
   private static final Set<String> pages = new HashSet<>();
   private static String root;
+  private static final Logger LOGGER = LogManager.getLogger();
+
   private final String path;
 
   public Crawler(String path){
@@ -25,8 +29,8 @@ public class Crawler extends RecursiveTask<Set<String>> {
   }
 
   @Override
-  protected Set<String> compute() {
-    Set<String> pages = new HashSet<>(); //Выводимая коллекция
+  protected Set<Page> compute() {
+    Set<Page> pages = new HashSet<>(); //Выводимая коллекция
     List<Crawler> tasks = new ArrayList<>();
     List<String> currentLinks = new ArrayList<>();
 
@@ -40,8 +44,13 @@ public class Crawler extends RecursiveTask<Set<String>> {
       Document doc = response.parse();
       int statusCode = response.statusCode();
       String content = doc.html();
+      String pageURL = validateLink(path);
+      LOGGER.info("Get page at: '" + pageURL + "', Status: " + statusCode);
 
-      Page page = new Page(path, statusCode, content);
+      if(!pageURL.isEmpty()) {
+        Page page = new Page(pageURL, statusCode, content);
+        pages.add(page);
+      }
 
       Elements urls = doc.getElementsByTag("a");
 
@@ -49,17 +58,16 @@ public class Crawler extends RecursiveTask<Set<String>> {
         String elementUrl = validateLink(url.attr("href"));
         if(!elementUrl.isEmpty() && !Crawler.pages.contains(elementUrl)) {
           currentLinks.add(elementUrl);
-          pages.add(elementUrl);
           Crawler.pages.add(elementUrl);
         }
       }
     }
     catch (Exception e){
-      e.printStackTrace(); //TODO: добавить логгирование
+      LOGGER.catching(e);
     }
     if(!currentLinks.isEmpty()){
       for(String url : currentLinks){
-        Crawler task = new Crawler(path + url); //TODO: Определить получение префикса
+        Crawler task = new Crawler(path + url);
         task.fork();
         tasks.add(task);
       }

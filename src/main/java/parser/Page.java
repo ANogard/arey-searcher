@@ -12,13 +12,16 @@ public class Page {
   private int id;
 
   @NotNull
-  private final String path;
+  private String path;
 
   @NotNull
   private int code;
 
   @NotNull
+  @Column(columnDefinition = "MEDIUMTEXT(MAX)")
   private String content;
+
+  public Page(){}
 
   public Page(String path, int code, String content){
     this.path = path;
@@ -28,6 +31,6 @@ public class Page {
 
   @Override
   public String toString(){
-    return path;
+    return path + ", " + code;
   }
 }
