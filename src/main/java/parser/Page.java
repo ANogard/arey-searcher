@@ -18,7 +18,7 @@ public class Page {
   private int code;
 
   @NotNull
-  @Column(columnDefinition = "MEDIUMTEXT(MAX)")
+  @Column(columnDefinition = "MEDIUMTEXT") //TODO: изменить аннотацию
   private String content;
 
   public Page(){}

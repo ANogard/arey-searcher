@@ -34,40 +34,42 @@ public class Crawler extends RecursiveTask<Set<Page>> {
     List<Crawler> tasks = new ArrayList<>();
     List<String> currentLinks = new ArrayList<>();
 
-    try {
-      Thread.sleep(500);
-      Connection.Response response = Jsoup.connect(path)
-              .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.81 Safari/537.36")
-              .timeout(10000)
-              .execute();
+    if(!Crawler.pages.contains(path)) {
+      try {
+        Thread.sleep(500);
+        Connection.Response response = Jsoup.connect(path)
+            .userAgent(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.81 Safari/537.36")
+            .timeout(10000)
+            .execute();
 
-      Document doc = response.parse();
-      int statusCode = response.statusCode();
-      String content = doc.html();
-      String pageURL = validateLink(path);
-      LOGGER.info("Get page at: '" + pageURL + "', Status: " + statusCode);
+        Document doc = response.parse();
+        int statusCode = response.statusCode();
+        String content = doc.html();
+        String pageURL = validateLink(path);
+        LOGGER.info("Get page at: '" + pageURL + "', Status: " + statusCode);
 
-      if(!pageURL.isEmpty()) {
+        if (!pageURL.isEmpty()) {
         Page page = new Page(pageURL, statusCode, content);
-        pages.add(page);
-      }
-
-      Elements urls = doc.getElementsByTag("a");
-
-      for(Element url : urls){
-        String elementUrl = validateLink(url.attr("href"));
-        if(!elementUrl.isEmpty() && !Crawler.pages.contains(elementUrl)) {
-          currentLinks.add(elementUrl);
-          Crawler.pages.add(elementUrl);
+          pages.add(page);
         }
+
+        Elements urls = doc.getElementsByTag("a");
+
+        for (Element url : urls) {
+          String elementUrl = validateLink(url.attr("href"));
+          if (!elementUrl.isEmpty() && !Crawler.pages.contains(elementUrl)) {
+            currentLinks.add(elementUrl);
+            Crawler.pages.add(elementUrl);
+          }
+        }
+      } catch (Exception e) {
+        LOGGER.catching(e);
       }
-    }
-    catch (Exception e){
-      LOGGER.catching(e);
     }
     if(!currentLinks.isEmpty()){
       for(String url : currentLinks){
-        Crawler task = new Crawler(path + url);
+        Crawler task = new Crawler(root + url);
         task.fork();
         tasks.add(task);
       }
@@ -89,28 +91,34 @@ public class Crawler extends RecursiveTask<Set<Page>> {
             "|(flv)|(avi)|(mp4)|(mp3)|(wav)" +
             "|(txt)|(pdf)|(doc[x]?)|(xls[x]?)|(xml)" +
             ")$");
-    Pattern siteRoot = Pattern.compile("(http[s]?://[\\w-]+\\.\\w+)(.*)");
+
     Pattern contact = Pattern.compile(".*(tel:)|(mailto:).*");
     Matcher files = pageExt.matcher(url);
-    Matcher root = siteRoot.matcher(url);
     Matcher contacts = contact.matcher(url);
 
-    //Отсечение корня
-    if(root.find()){
-      if(!root.group(1).equals(Crawler.root))
-      {
-        url = "";
-      } else {
-        url = root.group(2);
-      }
-    }
+    url = removeRoot(url);
 
     if(files.find() || url.isEmpty() || contacts.find() || url.matches(".*#.*")){
       return "";
     }
     else if(!url.startsWith("/")){
-      url = "/" + url;
+      url = removeRoot(path) + "/" + url;
     }
     return (url.endsWith("/")) ? url.substring(0, url.length() - 1) : url;
+  }
+
+  private String removeRoot(String url){
+    Pattern siteRoot = Pattern.compile("(http[s]?://[\\w-]+\\.\\w+)(.*)");
+    Matcher root = siteRoot.matcher(url);
+
+    if(root.find()){
+      if(root.group(1).equals(Crawler.root)) {
+        return root.group(2);
+      }
+      else {
+        return "";
+      }
+    }
+    return url;
   }
 }
