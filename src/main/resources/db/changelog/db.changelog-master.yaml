@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: ANogard
+      comment: init base
+      sqlFile:
+        encoding: UTF-8
+        path: migrations/001-create-db.sql
+        relativeToChangelogFile: true
