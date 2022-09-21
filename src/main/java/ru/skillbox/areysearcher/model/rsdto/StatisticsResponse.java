@@ -6,27 +6,19 @@ import lombok.Data;
 
 @Data
 @JsonInclude(Include.NON_NULL)
-public class GeneralResponse<T> {
+public class StatisticsResponse<T> {
 
   private Boolean result;
   private String error;
-  private T data;
+  private T statistics;
 
-  public GeneralResponse() {
-    this.result = true;
-  }
-
-  public GeneralResponse(boolean result) {
-    this.result = result;
-  }
-
-  public GeneralResponse(String error) {
+  public StatisticsResponse(String error) {
     this.result = false;
     this.error = error;
   }
 
-  public GeneralResponse(T data) {
+  public StatisticsResponse(T data) {
     this.result = true;
-    this.data = data;
+    this.statistics = data;
   }
 }

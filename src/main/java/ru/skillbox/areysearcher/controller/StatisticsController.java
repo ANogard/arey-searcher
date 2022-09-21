@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.skillbox.areysearcher.model.rsdto.GeneralResponse;
+import ru.skillbox.areysearcher.model.rsdto.StatisticsResponse;
 import ru.skillbox.areysearcher.model.rsdto.statistics.StatisticsDTO;
 import ru.skillbox.areysearcher.service.StatisticsService;
 
@@ -14,10 +14,10 @@ import ru.skillbox.areysearcher.service.StatisticsService;
 @RequestMapping("/api/statistics")
 public class StatisticsController {
 
-  private StatisticsService statisticsService;
+  private final StatisticsService statisticsService;
 
   @GetMapping
-  public ResponseEntity<GeneralResponse<StatisticsDTO>> getStatistics(){
-    return ResponseEntity.ok(new GeneralResponse<>(statisticsService.getStatistics()));
+  public ResponseEntity<StatisticsResponse<StatisticsDTO>> getStatistics() {
+    return ResponseEntity.ok(new StatisticsResponse<>(statisticsService.getStatistics()));
   }
 }

@@ -11,7 +11,7 @@ import ru.skillbox.areysearcher.model.rsdto.SearchResultDTO;
 @RequiredArgsConstructor
 public class SearchService {
 
-  public List<SearchResultDTO> search(SearchQueryDTO body){
+  public List<SearchResultDTO> search(SearchQueryDTO body) {
     return new ArrayList<>();
   }
 }

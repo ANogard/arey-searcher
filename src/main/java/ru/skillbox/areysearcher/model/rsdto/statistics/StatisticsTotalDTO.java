@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class StatisticsTotalDTO {
+
   private Integer sites;
   private Integer pages;
   private Integer lemmas;

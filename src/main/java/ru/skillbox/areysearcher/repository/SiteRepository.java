@@ -1,14 +1,18 @@
 package ru.skillbox.areysearcher.repository;
 
 import java.util.Date;
-import liquibase.pro.packaged.I;
-import lombok.Data;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.skillbox.areysearcher.model.entity.Site;
 import ru.skillbox.areysearcher.model.entity.Status;
 import ru.skillbox.areysearcher.model.mapper.SiteMapper;
+import ru.skillbox.areysearcher.model.mapper.StatisticsDetailedMapper;
+import ru.skillbox.areysearcher.model.mapper.StatisticsTotalMapper;
+import ru.skillbox.areysearcher.model.rsdto.statistics.StatisticsDetailedDTO;
+import ru.skillbox.areysearcher.model.rsdto.statistics.StatisticsTotalDTO;
 
 @Repository
 @RequiredArgsConstructor
@@ -16,34 +20,66 @@ public class SiteRepository {
 
   private final JdbcTemplate jdbc;
 
-  public Site getByUrl(String url){
+  public Site getByUrl(String url) {
     String sql = "SELECT * FROM site WHERE site.url = ?";
     return jdbc.queryForObject(sql, new SiteMapper(), url);
-
-  }
-  public Integer getIdByUrl(String url){
-    String sql = "select id from site where site.url = ?";
-    return jdbc.queryForObject(sql, (rs, rowNum) -> rs.getInt("id"), url);
   }
 
   public boolean isSiteExists(String url) {
-    return getIdByUrl(url) != null;
+    String sql = "SELECT * FROM site WHERE site.url = ?";
+    try {
+      jdbc.queryForObject(sql, new SiteMapper(), url);
+      return true;
+    } catch (DataAccessException e) {
+      return false;
+    }
   }
 
   public Site save(Site site) {
-    String sql = "insert into site (status, status_time, last_error, url, name) " +
-        "values (?, ?, ?, ?) RETURNING *";
-
+    String sql = "INSERT INTO site (status, status_time, last_error, url, name) " +
+        "VALUES (?::status_type, ?, ?, ?, ?) RETURNING *";
     return jdbc.queryForObject(sql, new SiteMapper(),
-        Status.INDEXING,
+        Status.INDEXING.toString(),
         new Date(),
         site.getLastError(),
         site.getUrl(),
         site.getName());
   }
 
-  public void saveStatus(Integer id, Status status){
-    String sql = "UPDATE site SET (status, status_time) = (?, ?) WHERE site.id = ?";
-    jdbc.update(sql, status, new Date(), id);
+  public Site getSiteOrSave(Site site) {
+    try {
+      updateStatus(site, Status.INDEXING);
+      return getByUrl(site.getUrl());
+    } catch (DataAccessException e) {
+      return save(site);
+    }
+  }
+
+  public void updateStatus(Site site, Status status) {
+    String sql = "UPDATE site SET (status, status_time) = (?::status_type, ?) WHERE site.id = ?";
+    jdbc.update(sql, status.toString(), new Date(), site.getId());
+  }
+
+  public void updateError(Site site, String error) {
+    String sql = "UPDATE site SET last_error = ? WHERE site.id = ?";
+    jdbc.update(sql, error, site.getId());
+  }
+
+  public StatisticsTotalDTO getStatisticsTotal() {
+    String sql = "SELECT COUNT(site.id) as sites, "
+        + "(SELECT COUNT(page.id) FROM page) as pages, "
+        + "(SElECT COUNT(lemma.id) FROM lemma) as lemmas "
+        + "FROM site;";
+    return jdbc.queryForObject(sql, new StatisticsTotalMapper());
+  }
+
+  public List<StatisticsDetailedDTO> getStatisticsDetailed() {
+    String sql = "SELECT site.url, site.name, site.status, site.status_time, site.last_error, "
+        + "(SELECT COUNT(*) FROM page WHERE page.site_id=site.id) as pages, "
+        + "(SELECT COUNT(*) FROM lemma WHERE lemma.site_id=site.id) as lemmas "
+        + "FROM site "
+        + "JOIN lemma ON site.id=lemma.site_id "
+        + "GROUP BY site.id";
+    return jdbc.query(sql, new StatisticsDetailedMapper());
   }
 }

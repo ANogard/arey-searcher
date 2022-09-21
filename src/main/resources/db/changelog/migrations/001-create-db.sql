@@ -28,7 +28,7 @@ create table if not exists page (
     id serial,
     path varchar(255),
     code int4,
-    content varchar(255),
+    content varchar,
     site_id int4,
     primary key (id)
 );
@@ -42,3 +42,7 @@ create table if not exists site (
     name varchar(255),
     primary key (id)
 );
+
+insert into field (name, selector, weight) values
+    ('title','title', 1.0),
+    ('body','body', 0.8);

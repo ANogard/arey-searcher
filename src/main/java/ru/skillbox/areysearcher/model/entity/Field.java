@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class Field {
+
   private Integer id;
   private String name;
   private String selector;

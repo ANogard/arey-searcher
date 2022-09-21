@@ -1,29 +1,34 @@
 package ru.skillbox.areysearcher.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.skillbox.areysearcher.model.entity.Field;
-import ru.skillbox.areysearcher.model.entity.Page;
-import ru.skillbox.areysearcher.service.crawler.Crawler;
+import ru.skillbox.areysearcher.exception.IndexException;
+import ru.skillbox.areysearcher.service.crawler.CrawlerService;
 
 @Service
 @RequiredArgsConstructor
 public class IndexService {
 
-  public boolean startIndexing(){
-    Map<Page, Map<Field, List<String>>> crawler =
-        new ForkJoinPool().invoke(new Crawler());
+  private final CrawlerService crawlerService;
+
+  public boolean startIndexing() throws IndexException {
+    if (CrawlerService.isIndexing()) {
+      throw new IndexException("Индексация уже запущена");
+    }
+    CrawlerService.setIndexing(true);
     return true;
   }
 
-  public boolean stopIndexing(){
+  public boolean stopIndexing() throws IndexException {
+    if (!CrawlerService.isIndexing()) {
+      throw new IndexException("Индексация не запущена");
+    }
+    CrawlerService.setIndexing(false);
     return true;
   }
 
-  public boolean indexPage(String page){
+  public boolean indexPage(String page) throws IndexException {
+    crawlerService.crawlPage(page);
     return true;
   }
 }

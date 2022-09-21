@@ -12,8 +12,8 @@ public class FieldRepository {
 
   private final JdbcTemplate jdbc;
 
-  public Field getFieldByName(String name){
-    String sql = "select * from field where field.name = ?";
+  public Field getFieldByName(String name) {
+    String sql = "SELECT * FROM field WHERE field.name = ?";
     return jdbc.queryForObject(sql, new FieldMapper(), name);
   }
 }

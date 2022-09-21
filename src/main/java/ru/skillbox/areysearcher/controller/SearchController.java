@@ -21,7 +21,8 @@ public class SearchController {
   SearchService searchService;
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<GeneralResponse<List<SearchResultDTO>>> search(@RequestBody SearchQueryDTO body){
+  public ResponseEntity<GeneralResponse<List<SearchResultDTO>>> search(
+      @RequestBody SearchQueryDTO body) {
 
     return ResponseEntity.ok(new GeneralResponse<>(searchService.search(body)));
   }
