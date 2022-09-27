@@ -20,6 +20,11 @@ public class SiteRepository {
 
   private final JdbcTemplate jdbc;
 
+  public List<Site> getAll(){
+    String sql = "SELECT * FROM site";
+    return jdbc.query(sql, new SiteMapper());
+  }
+
   public Site getByUrl(String url) {
     String sql = "SELECT * FROM site WHERE site.url = ?";
     return jdbc.queryForObject(sql, new SiteMapper(), url);
@@ -36,10 +41,9 @@ public class SiteRepository {
   }
 
   public Site save(Site site) {
-    String sql = "INSERT INTO site (status, status_time, last_error, url, name) " +
-        "VALUES (?::status_type, ?, ?, ?, ?) RETURNING *";
+    String sql = "INSERT INTO site (status_time, last_error, url, name) " +
+        "VALUES (?, ?, ?, ?) RETURNING *";
     return jdbc.queryForObject(sql, new SiteMapper(),
-        Status.INDEXING.toString(),
         new Date(),
         site.getLastError(),
         site.getUrl(),
@@ -48,7 +52,6 @@ public class SiteRepository {
 
   public Site getSiteOrSave(Site site) {
     try {
-      updateStatus(site, Status.INDEXING);
       return getByUrl(site.getUrl());
     } catch (DataAccessException e) {
       return save(site);

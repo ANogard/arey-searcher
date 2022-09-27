@@ -37,8 +37,7 @@ public class LemmaRepository {
 
   public Lemma getLemmaOrSave(Lemma lemma) {
     try {
-      Lemma getLemma = get(lemma);
-      return getLemma;
+      return get(lemma);
     } catch (DataAccessException e) {
       return save(lemma);
     }

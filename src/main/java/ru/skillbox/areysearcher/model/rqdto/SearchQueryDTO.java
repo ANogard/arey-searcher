@@ -1,8 +1,10 @@
 package ru.skillbox.areysearcher.model.rqdto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class SearchQueryDTO {
 
   private String query;

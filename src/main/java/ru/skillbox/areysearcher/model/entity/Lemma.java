@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class Lemma {
+public class Lemma implements Comparable<Lemma> {
 
   private Integer id;
   private String lemma;
@@ -16,5 +16,10 @@ public class Lemma {
     this.lemma = lemma;
     this.siteId = siteId;
     frequency = 0;
+  }
+
+  @Override
+  public int compareTo(Lemma o) {
+    return Integer.compare(frequency, o.getFrequency());
   }
 }

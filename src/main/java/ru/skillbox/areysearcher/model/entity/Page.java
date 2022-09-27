@@ -13,8 +13,9 @@ public class Page {
   private String content;
   private Integer siteId;
 
-  public Page(String path) {
+  public Page(String path, Integer siteId) {
     this.path = path;
+    this.siteId = siteId;
   }
 
 }

@@ -1,4 +1,4 @@
-package ru.skillbox.areysearcher.service;
+package ru.skillbox.areysearcher.service.indexator;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,23 +12,23 @@ public class IndexService {
   private final CrawlerService crawlerService;
 
   public boolean startIndexing() throws IndexException {
-    if (CrawlerService.isIndexing()) {
+    if (Indexator.isIndexing()) {
       throw new IndexException("Индексация уже запущена");
     }
-    CrawlerService.setIndexing(true);
+    Indexator.setIndexing(true);
     return true;
   }
 
   public boolean stopIndexing() throws IndexException {
-    if (!CrawlerService.isIndexing()) {
+    if (!Indexator.isIndexing()) {
       throw new IndexException("Индексация не запущена");
     }
-    CrawlerService.setIndexing(false);
+    Indexator.setIndexing(false);
     return true;
   }
 
   public boolean indexPage(String page) throws IndexException {
-    crawlerService.crawlPage(page);
+    crawlerService.addPage(page);
     return true;
   }
 }

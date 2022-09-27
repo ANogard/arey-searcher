@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.skillbox.areysearcher.model.rsdto.GeneralResponse;
-import ru.skillbox.areysearcher.service.IndexService;
+import ru.skillbox.areysearcher.service.indexator.IndexService;
 
 @RequiredArgsConstructor
 @RestController

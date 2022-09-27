@@ -18,7 +18,7 @@ import ru.skillbox.areysearcher.service.SearchService;
 @RequestMapping("/api/search")
 public class SearchController {
 
-  SearchService searchService;
+  private final SearchService searchService;
 
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<GeneralResponse<List<SearchResultDTO>>> search(
