@@ -8,7 +8,7 @@ import ru.skillbox.areysearcher.model.entity.Site;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SearchResultDTO {
+public class SearchResultDTO implements Comparable<SearchResultDTO> {
 
   private String site;
   private String siteName;
@@ -20,5 +20,10 @@ public class SearchResultDTO {
   public SearchResultDTO (Site site){
     this.site = site.getUrl();
     siteName = site.getName();
+  }
+
+  @Override
+  public int compareTo(SearchResultDTO o) {
+    return Double.compare(o.getRelevance(), relevance);
   }
 }

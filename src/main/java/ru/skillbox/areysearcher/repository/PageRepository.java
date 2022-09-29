@@ -56,9 +56,9 @@ public class PageRepository {
   }
 
   public List<Page> getByLemma(Lemma lemma){
-    String sql = "SELECT page.id, page.path, page.site_id, lemma.lemma FROM page" +
-    "JOIN index_rank ON index_rank.page_id=page.id" +
-    "JOIN lemma ON lemma.id=index_rank.lemma_id" +
+    String sql = "SELECT page.id, page.path, page.code, page.content, page.site_id FROM page " +
+    "JOIN index_rank ON index_rank.page_id=page.id " +
+    "JOIN lemma ON lemma.id=index_rank.lemma_id " +
     "WHERE page.site_id = ? AND lemma.lemma = ?";
     return jdbc.query(sql, new PageMapper(), lemma.getSiteId(), lemma.getLemma());
   }
