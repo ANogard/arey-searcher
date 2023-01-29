@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.skillbox.areysearcher.model.entity.Lemma;
 import ru.skillbox.areysearcher.model.mapper.LemmaMapper;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class LemmaRepository {
@@ -16,6 +18,10 @@ public class LemmaRepository {
   public Lemma get(Lemma lemma) {
     String sql = "SELECT * FROM lemma WHERE lemma.lemma = ? AND lemma.site_id = ?";
     return jdbc.queryForObject(sql, new LemmaMapper(), lemma.getLemma(), lemma.getSiteId());
+  }
+  public List<Lemma> getAll(String lemma) {
+    String sql = "SELECT * FROM lemma WHERE lemma.lemma = ? ";
+    return jdbc.query(sql, new LemmaMapper(), lemma);
   }
 
   public Lemma save(Lemma lemma) {

@@ -9,5 +9,5 @@ spring:
 application:
   sites:
     -
-      url: 'https://lenta.ru/'
-      name: 'Lenta'
+      url: 'https://remserv38.ru/'
+      name: 'RemServis'

@@ -30,6 +30,11 @@ public class SiteRepository {
     return jdbc.queryForObject(sql, new SiteMapper(), url);
   }
 
+  public Site getById(int id) {
+    String sql = "SELECT * FROM site WHERE site.id = ?";
+    return jdbc.queryForObject(sql, new SiteMapper(), id);
+  }
+
   public boolean isSiteExists(String url) {
     String sql = "SELECT * FROM site WHERE site.url = ?";
     try {
@@ -41,9 +46,10 @@ public class SiteRepository {
   }
 
   public Site save(Site site) {
-    String sql = "INSERT INTO site (status_time, last_error, url, name) " +
-        "VALUES (?, ?, ?, ?) RETURNING *";
+    String sql = "INSERT INTO site (status, status_time, last_error, url, name) " +
+        "VALUES (?::status_type, ?, ?, ?, ?) RETURNING *";
     return jdbc.queryForObject(sql, new SiteMapper(),
+        Status.INDEXING.toString(),
         new Date(),
         site.getLastError(),
         site.getUrl(),
@@ -84,5 +90,13 @@ public class SiteRepository {
         + "JOIN lemma ON site.id=lemma.site_id "
         + "GROUP BY site.id";
     return jdbc.query(sql, new StatisticsDetailedMapper());
+  }
+
+  public List<Site> getSitesByLemma(String lemma){
+    String sql ="SELECT site.id, site.status, site.status_time, site.last_error, site.url, site.name " +
+            "FROM site " +
+            "JOIN lemma ON lemma.site_id=site.id " +
+            "WHERE lemma.lemma = ?";
+    return jdbc.query(sql, new SiteMapper(), lemma);
   }
 }

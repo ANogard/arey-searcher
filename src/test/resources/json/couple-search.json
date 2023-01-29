@@ -1,0 +1,21 @@
+{
+  "result": true,
+  "data": [
+    {
+      "site": "https://test.ru/",
+      "siteName": "TestSite",
+      "uri": "",
+      "title": "",
+      "snippet": "[{Ехал Грека через реку видит ",
+      "relevance": 1.0
+    },
+    {
+      "site": "https://test.ru/",
+      "siteName": "TestSite",
+      "uri": "test",
+      "title": "",
+      "snippet": "[{Ехал Грека через реку видит ",
+      "relevance": 0.4
+    }
+  ]
+}

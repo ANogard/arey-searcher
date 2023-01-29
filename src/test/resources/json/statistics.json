@@ -1,0 +1,22 @@
+{
+  "result": true,
+  "statistics": {
+    "total": {
+      "sites": 1,
+      "pages": 2,
+      "lemmas": 10,
+      "isIndexing": false
+    },
+    "detailed": [
+      {
+        "url": "https://test.ru/",
+        "name": "TestSite",
+        "status": "INDEXED",
+        "statusTime": "2023-01-28",
+        "error": "none",
+        "pages": 2,
+        "lemmas": 10
+      }
+    ]
+  }
+}

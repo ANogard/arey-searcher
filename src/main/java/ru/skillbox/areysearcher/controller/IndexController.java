@@ -19,12 +19,12 @@ public class IndexController {
 
   @GetMapping("startIndexing")
   public ResponseEntity<GeneralResponse<Object>> startIndexing() {
-    return ResponseEntity.ok(new GeneralResponse(indexService.startIndexing()));
+    return ResponseEntity.ok(new GeneralResponse<>(indexService.startIndexing()));
   }
 
   @GetMapping("stopIndexing")
   public ResponseEntity<GeneralResponse<Object>> stopIndexing() {
-    return ResponseEntity.ok(new GeneralResponse(indexService.stopIndexing()));
+    return ResponseEntity.ok(new GeneralResponse<>(indexService.stopIndexing()));
   }
 
   @PostMapping("indexPage")

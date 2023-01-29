@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Connection.Response;
 import org.jsoup.HttpStatusException;
@@ -16,19 +18,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ru.skillbox.areysearcher.model.entity.Field;
-import ru.skillbox.areysearcher.model.entity.IndexRank;
-import ru.skillbox.areysearcher.model.entity.Lemma;
-import ru.skillbox.areysearcher.model.entity.Page;
-import ru.skillbox.areysearcher.model.entity.Site;
-import ru.skillbox.areysearcher.model.entity.Status;
-import ru.skillbox.areysearcher.repository.FieldRepository;
-import ru.skillbox.areysearcher.repository.IndexRankRepository;
-import ru.skillbox.areysearcher.repository.LemmaRepository;
-import ru.skillbox.areysearcher.repository.PageRepository;
-import ru.skillbox.areysearcher.repository.SiteRepository;
+import ru.skillbox.areysearcher.model.entity.*;
+import ru.skillbox.areysearcher.repository.*;
 import ru.skillbox.areysearcher.service.Constants;
 import ru.skillbox.areysearcher.service.crawler.CrawlerService;
 import ru.skillbox.areysearcher.service.crawler.CrawlerUtils;
@@ -44,8 +39,10 @@ public class Indexator {
   private final PageRepository pageRepository;
   private final SiteRepository siteRepository;
   private final IndexRankRepository indexRankRepository;
+  private final SnippetRepository snippetRepository;
+  private final Logger logger = LoggerFactory.getLogger("Index Logger");
 
-  @Scheduled(fixedRateString = "PT30S")
+  @Scheduled(initialDelayString = "PT5M", fixedRateString = "PT5M")
   private void index() {
     if(indexing) {
       Map<Site, Set<String>> preparedPages = CrawlerService.getPreparedPages();
@@ -53,17 +50,20 @@ public class Indexator {
       Map<Site, Set<String>> indexedPages = CrawlerService.getIndexedPages();
       indexSite(indexedPages);
       setIndexing(false);
+      logger.info("Индексирование закончено");
     }
   }
 
   private void indexSite(Map<Site, Set<String>> pages){
     if(!pages.isEmpty()){
       for(Entry<Site, Set<String>> entry : pages.entrySet()){
+        logger.info("Индексирование сайта '" + entry.getKey().getUrl() + "'");
         siteRepository.updateStatus(entry.getKey(), Status.INDEXING);
         for (String path : entry.getValue()){
           indexPage(entry.getKey(), path);
         }
         siteRepository.updateStatus(entry.getKey(), Status.INDEXED);
+        logger.info("Индексирование сайта '" + entry.getKey().getUrl() + "' завершено");
       }
     }
   }
@@ -73,7 +73,7 @@ public class Indexator {
       String root = site.getUrl().substring(0, site.getUrl().length() - 1);
       Page page = pageRepository.getPageOrSave(CrawlerUtils.getRelativePath(path, root),
           site.getId());
-
+      logger.info("\tИндексирование страницы '" + page.getPath() + "'");
       try {
         Thread.sleep(500);
         Response response = Jsoup.connect(path).userAgent(Constants.USER_AGENT).timeout(10000)
@@ -102,6 +102,7 @@ public class Indexator {
           siteRepository.updateStatus(site, Status.FAILED);
           siteRepository.updateError(site, "Site unavailable, code: " + page.getCode());
         }
+        logger.info("\tИндексирование страницы '" + page.getPath() + "' завершено");
       } catch (InterruptedException | IOException e) {
         e.printStackTrace();
       }
@@ -112,11 +113,16 @@ public class Indexator {
     Lemm lemm = new Lemm(lemmaRepository, siteId);
     Map<IndexRank, String> indexRank = new HashMap<>();
     Set<Lemma> lemmas = new HashSet<>();
+    List<String> snippetLemmas = new ArrayList<>();
 
     for (Map.Entry<Field, List<String>> field : page.entrySet()) {
       Map<Lemma, Integer> lemmasInField =
           lemm.getLemmasFromText(field.getValue());
       lemmas.addAll(lemmasInField.keySet());
+      if(field.getKey().getName().equals("body")) {
+        List<String> lemmasFromField = lemm.getLemmasListFromText(field.getValue());
+        snippetRepository.updateSnippetOrSave(new Snippet(lemmasFromField, field.getValue().stream().map(w -> w.replaceAll(",", "")).collect(Collectors.toList()), pageId));
+      }
 
       for (Map.Entry<Lemma, Integer> lemma : lemmasInField.entrySet()) {
         Lemma currentLemma = lemma.getKey();

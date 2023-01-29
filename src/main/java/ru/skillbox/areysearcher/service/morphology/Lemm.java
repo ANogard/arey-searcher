@@ -10,6 +10,8 @@ import java.util.Map;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.WrongCharaterException;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import ru.skillbox.areysearcher.model.entity.Lemma;
 import ru.skillbox.areysearcher.repository.LemmaRepository;
@@ -17,16 +19,21 @@ import ru.skillbox.areysearcher.repository.LemmaRepository;
 public class Lemm {
 
   private final LemmaRepository lemmaRepository;
-  private final int siteId;
+  private int siteId;
   private LuceneMorphology luceneMorphology;
+  private final Logger logger = LoggerFactory.getLogger("Index Logger");
 
-  public Lemm(LemmaRepository lemmaRepository, int siteId) {
+  public Lemm(LemmaRepository lemmaRepository){
     try {
       luceneMorphology = new RussianLuceneMorphology();
     } catch (IOException e) {
       e.printStackTrace();
     }
     this.lemmaRepository = lemmaRepository;
+    this.siteId = 0;
+  }
+  public Lemm(LemmaRepository lemmaRepository, int siteId) {
+    this(lemmaRepository);
     this.siteId = siteId;
   }
 
@@ -51,6 +58,24 @@ public class Lemm {
     return out;
   }
 
+  public List<String> getLemmasListFromText(List<String> text) {
+    List<String> words = new ArrayList<>();
+    for (String word : text) {
+      word = word.toLowerCase(Locale.ROOT).replaceAll("\\p{Punct}", "");
+      if (word.isEmpty()) {
+        words.add("");
+        continue;
+      }
+      try {
+        List<String> morph = luceneMorphology.getNormalForms(word);
+        words.add(morph.get(0));
+      } catch (WrongCharaterException ex) {
+        words.add(word);
+      }
+    }
+    return words;
+  }
+
   public List<Lemma> searchLemmas(String text) {
     List<String> words = getNormalFormsFromText(text);
     List<Lemma> out = new ArrayList<>();
@@ -62,10 +87,11 @@ public class Lemm {
         continue;
       }
       try {
-        Lemma lemma = lemmaRepository.get(new Lemma(wordInfo.get(0).split("\\|")[0], siteId));
-        out.add(lemma);
+        List<Lemma> lemmas = (siteId == 0) ? lemmaRepository.getAll(wordInfo.get(0).split("\\|")[0]) :
+                List.of(lemmaRepository.get(new Lemma(wordInfo.get(0).split("\\|")[0], siteId)));
+        out.addAll(lemmas);
       } catch (DataAccessException e) {
-        System.err.println("Lemma '" + wordInfo.get(0).split("\\|")[0] + "' not found.");
+        logger.info("Лемма '" + wordInfo.get(0).split("\\|")[0] + "' не найдена.");
       }
     }
     Collections.sort(out);

@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    sql-script-encoding: UTF-8
+
+  liquibase.enabled: false

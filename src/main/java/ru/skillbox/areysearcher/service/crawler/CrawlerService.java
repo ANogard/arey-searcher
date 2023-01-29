@@ -9,7 +9,7 @@ import java.util.concurrent.ForkJoinPool;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ru.skillbox.areysearcher.exception.IndexException;
+import ru.skillbox.areysearcher.exception.GlobalException;
 import ru.skillbox.areysearcher.model.entity.Page;
 import ru.skillbox.areysearcher.model.entity.Site;
 import ru.skillbox.areysearcher.repository.PageRepository;
@@ -59,10 +59,10 @@ public class CrawlerService {
     }
   }
 
-  public void addPage(String url) throws IndexException {
+  public void addPage(String url) throws GlobalException {
     String siteURL = CrawlerUtils.getRootPath(url) + "/";
     if (!siteRepository.isSiteExists(siteURL)) {
-      throw new IndexException("Страница за пределами индексируемых сайтов");
+      throw new GlobalException("Страница за пределами индексируемых сайтов");
     }
     Site site = siteRepository.getByUrl(siteURL);
     Set<String> paths = new HashSet<>();

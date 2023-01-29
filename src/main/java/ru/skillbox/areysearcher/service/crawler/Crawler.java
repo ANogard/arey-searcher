@@ -34,7 +34,6 @@ public class Crawler extends RecursiveTask<Set<String>> {
     root = null;
   }
 
-  //Выводит коллекцию со страницами и списком исходных слов, объединенных по полям
   @Override
   protected Set<String> compute() {
     Set<String> out = new HashSet<>();
@@ -49,7 +48,7 @@ public class Crawler extends RecursiveTask<Set<String>> {
       Thread.sleep(500);
       response = Jsoup.connect(path).userAgent(Constants.USER_AGENT).timeout(10000).execute();
     } catch (HttpStatusException e) {
-      out.add(pagePath); //TODO: log
+      out.add(pagePath);
     } catch (InterruptedException | IOException e) {
       e.printStackTrace();
     }

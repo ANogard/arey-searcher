@@ -43,6 +43,15 @@ create table if not exists site (
     primary key (id)
 );
 
+create table if not exists snippet
+(
+    id serial,
+    page_id int4,
+    lemmas character varying[],
+    words character varying[],
+    primary key (id)
+);
+
 insert into field (name, selector, weight) values
     ('title','title', 1.0),
     ('body','body', 0.8);
