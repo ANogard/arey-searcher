@@ -46,7 +46,7 @@ public class SearchService {
 
     List<Page> pages = new ArrayList<>();
     for(Lemma lemma : lemmas){
-      pages = getPages(lemma, pages);
+      pages.addAll(getPages(lemma, pages));
     }
     if(pages.isEmpty()) {
       return new ArrayList<>();
@@ -74,8 +74,8 @@ public class SearchService {
     if(pages.isEmpty()){
       return pagesWithLemmas;
     }
-    for(Page page : pages){
-      if(pagesWithLemmas.contains(page)){
+    for(Page page : pagesWithLemmas){
+      if(pages.contains(page) || !page.getSiteId().equals(pages.get(0).getSiteId())){
         out.add(page);
       }
     }
@@ -87,6 +87,7 @@ public class SearchService {
     for (Page page : pages) {
       Double rank = 0.;
       for (Lemma lemma : lemmas) {
+        if(!lemma.getSiteId().equals(page.getSiteId())) continue;
         IndexRank indexRank = indexRankRepository.get(page.getId(), lemma.getId());
         rank += indexRank.getRank();
       }
@@ -98,6 +99,7 @@ public class SearchService {
   private Double getRank(Page page, List<Lemma> lemmas){
     Double rank = 0.;
     for (Lemma lemma : lemmas) {
+      if(!lemma.getSiteId().equals(page.getSiteId())) continue;
       IndexRank indexRank = indexRankRepository.get(page.getId(), lemma.getId());
       rank += indexRank.getRank();
     }
